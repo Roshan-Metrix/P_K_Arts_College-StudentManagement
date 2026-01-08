@@ -4,11 +4,11 @@ import userAuth from '../middleware/userAuth.js';
 import adminAuth from '../middleware/adminAuth.js';
 import {
   addCoursesAndYears,
+  AddStudentDetail,
   deleteStudent,
   getCoursesAndYears,
   getLoggedInUserData,
   storeExtraStudentData,
-  studentDetail,
   updateExtraStudentData,
   updateStudentDetail,
   viewAllStudentsData,
@@ -20,7 +20,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const roleRouter = express.Router();
 
-roleRouter.post('/students', userAuth, upload.single('photo'), studentDetail);
+roleRouter.post('/students', userAuth, upload.single('photo'), AddStudentDetail);
 roleRouter.post('/students/moreData/:student_uid', userAuth, storeExtraStudentData);
 roleRouter.get('/getStudentsData', userAuth, viewAllStudentsData);
 roleRouter.get('/viewStudentData/:student_uid', userAuth, viewStudentData);
