@@ -1,7 +1,7 @@
 import createDB from "../config/connection.js";
 import generateStudentId from "../lib/generateStdID.js";
 
-export const studentDetail = async (req, res) => {
+export const AddStudentDetail = async (req, res) => {
   try {
     const {
       name,
@@ -422,7 +422,6 @@ export const updateExtraStudentData = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 
 export const deleteStudent = async (req, res) => {
   try {
