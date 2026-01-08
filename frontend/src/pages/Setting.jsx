@@ -16,6 +16,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import CollegeCalendar from "../components/CollegeCalendar";
+import CollegeEvents from "../components/CollegeEvents";
+import CollegeCourses from "../components/CollegeCourses";
 
 const Setting = () => {
   const { backendUrl, setIsLoggedin } = useContext(AppContent);
@@ -768,12 +770,12 @@ const Setting = () => {
 
               {/* Reset Password */}
               {subPortalTab === "events" && (
-                <h3>Events</h3>
+                <CollegeEvents />
               )}
 
               {/* All Users */}
               {subPortalTab === "courses" && (
-              <h3>Courses</h3>
+               <CollegeCourses />
               )}
             </>
           )}

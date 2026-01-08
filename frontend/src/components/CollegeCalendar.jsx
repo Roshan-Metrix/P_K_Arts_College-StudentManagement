@@ -6,8 +6,15 @@ import { AppContent } from "../context/AppContext";
 const indianHolidays = {
   0: { 1: "New Year", 26: "Republic Day" }, // Jan
   7: { 15: "Independence Day" },            // Aug
-  9: { 2: "Gandhi Jayanti" },                // Oct
-  11: { 25: "Christmas" },                  // Dec
+  11: { 2: "Gandhi Jayanti", 25: "Christmas" },
+  3: { 2: "Good Friday", 4: "Easter Sunday" },
+  5: { 6: "Bakrid" },                             
+  6: { 15: "Independence Day", 27: "Ganesh Chaturthi" }, // Jul
+  8: { 5: "Milad-un-Nabi", 1: "Saraswathi Pooja" }, // Sep
+  9: { 20: "Diwali", 1: "Puducherry Liberation Day" }, // Oct
+  0: { 13: "Lohri", 14: "Makar Sankranti", 26: "Republic Day" }, // Jan
+  1: { 27: "Maha Shivaratri" },                    // Feb
+  2: { 2: "Holi" }                                 // Mar
 };
 
 const CollegeCalendar = () => {
@@ -29,17 +36,18 @@ const CollegeCalendar = () => {
   }, []);
 
   const fetchEvents = async () => {
-    const res = await axios.get(`${backendUrl}/roles/calendar`);
-    setEvents(res.data || []);
+    const res = await axios.get(`${backendUrl}/api/college/get-events`);
+    console.log(res.data.AllEvents);
+    setEvents(res.data.AllEvents || []);
   };
 
   //  Add event
   const addEvent = async () => {
     if (!newEvent || !selectedDate) return;
 
-    await axios.post(`${backendUrl}/api/roles/calendar`, {
-      date: selectedDate.toISOString().split("T")[0],
-      event: newEvent,
+    await axios.post(`${backendUrl}/api/college/add-events`, {
+      date: selectedDate,
+      events: newEvent,
     });
 
     setNewEvent("");
@@ -139,7 +147,7 @@ const CollegeCalendar = () => {
                 `}
               >
                 <div className="font-bold">{day}</div>
-                {isHoliday && <div className="text-xs">{isHoliday}</div>}
+                {isHoliday && <div className="text-xs text-center">{isHoliday}</div>}
               </div>
             );
           })}
@@ -154,7 +162,7 @@ const CollegeCalendar = () => {
           {monthlyEvents.length === 0 && <p className="text-sm text-gray-500">No events</p>}
           {monthlyEvents.map((e, i) => (
             <p key={i} className="text-sm">
-              {new Date(e.date).getDate()} : {e.event}
+              {new Date(e.date).getDate()} : {e.events}
             </p>
           ))}
         </div>
@@ -183,7 +191,7 @@ const CollegeCalendar = () => {
             )}
 
             {selectedDayEvents.map((e, i) => (
-              <p key={i} className="text-sm">• {e.event}</p>
+              <p key={i} className="text-sm">• {e.events}</p>
             ))}
 
             <input

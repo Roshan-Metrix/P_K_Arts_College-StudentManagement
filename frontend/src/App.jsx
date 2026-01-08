@@ -12,7 +12,7 @@ import YearCategory from "./pages/YearCategory";
 import Login from "./pages/Login";
 import { AppContent } from "./context/AppContext";
 import NotFound from "./pages/NotFound";
-import Setting from "./pages/UserProfile";
+import Setting from "./pages/Setting";
 
 const App = () => {
   const { isLoggedin } = useContext(AppContent);
