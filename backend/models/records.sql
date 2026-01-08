@@ -132,3 +132,28 @@ CREATE TABLE IF NOT EXISTS all_years(
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(year)
 );
+
+CREATE TABLE IF NOT EXISTS events(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    date DATE NOT NULL,
+    events TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS eventsGallery(
+   id INT PRIMARY KEY AUTO_INCREMENT,
+   name VARCHAR(100) NOT NULL,
+   date DATE NOT NULL,
+   photo1 LONGBLOB NULL,
+   photo2 LONGBLOB NULL,
+   photo3 LONGBLOB NULL,
+   description VARCHAR(255) NOT NULL 
+);
+
+CREATE TABLE IF NOT EXISTS course_files (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sub_name VARCHAR(255),
+    file_name VARCHAR(255),
+    file_desc VARCHAR(255),
+    file_path VARCHAR(500)
+);
+
