@@ -321,7 +321,7 @@ const Setting = () => {
           )}
 
           {/* Portal Setting */}
-           {user?.role === "admin" && (
+           {/* {user?.role === "admin" && ( */}
             <div className="w-full">
               <button
                 onClick={() => {
@@ -385,7 +385,7 @@ const Setting = () => {
                 </div>
               )}
             </div>
-          )}
+          {/* )} */}
 
         </div>
 
