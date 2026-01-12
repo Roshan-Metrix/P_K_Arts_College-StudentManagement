@@ -7,6 +7,8 @@ import {
   getCollegeEvents,
   getCollegeEventsGallery,
   getCoursesFiles,
+  getNotices,
+  updateNotices,
 } from "../controllers/collegeController.js";
 import uploadEventImages from "../middleware/uploadEventImage.js";
 import uploadCoursePdf from "../middleware/uploadCoursePdf.js";
@@ -42,5 +44,10 @@ collegeRouter.post(
   AddCoursesFiles
 );
 collegeRouter.get("/get-course-files/:sub_name",getCoursesFiles);
+
+// Adding & Fetching Notices
+collegeRouter.put("/update-notice",userAuth,updateNotices);
+collegeRouter.get("/get-notice",getNotices);
+
 
 export default collegeRouter;
