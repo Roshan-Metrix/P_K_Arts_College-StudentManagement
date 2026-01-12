@@ -327,6 +327,61 @@ export const getCoursesFiles = async (req, res) => {
   }
 };
 
+// Add marquee notices 
+export const updateNotices = async (req, res) => {
+  try{
+  const { notice } = req.body;
+
+  if(!notice){
+   res.status(400).json({status:false, message:"All fields are required"})
+  }
+
+  const db = (await createDB.getConnection)
+      ? await createDB.getConnection()
+      : await createDB();
+
+  await db.execute(`UPDATE college_notice SET notice = ? WHERE id = 1`,[notice]);
+
+   res.status(201).json({
+      success: true,
+      message: "Notice uploaded successfully",
+      notice  
+    });
+
+  }catch(error){
+    console.log("Error in addNotices controller:",error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export const getNotices = async (req, res) => {
+  try{
+
+  const db = (await createDB.getConnection)
+      ? await createDB.getConnection()
+      : await createDB();
+
+ const [notices] =  await db.execute(`SELECT notice FROM college_notice`);
+
+   res.status(200).json({
+      success: true,
+      message: "Notice fetch successfully",
+      notices
+    });
+
+  }catch(error){
+    console.log("Error in getNotices controller:",error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+
 
 
 
