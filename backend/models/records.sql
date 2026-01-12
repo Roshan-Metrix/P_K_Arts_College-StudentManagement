@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS studentdata (
    gender VARCHAR(10),
    course VARCHAR(100),
    year VARCHAR(100),
-   photo LONGBLOB NULL,
+   photo VARCHAR(255) NULL,
    bloodGroup VARCHAR(10),
    scholarshipDetails VARCHAR(100),
    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -143,17 +143,20 @@ CREATE TABLE IF NOT EXISTS eventsGallery(
    id INT PRIMARY KEY AUTO_INCREMENT,
    name VARCHAR(100) NOT NULL,
    date DATE NOT NULL,
-   photo1 LONGBLOB NULL,
-   photo2 LONGBLOB NULL,
-   photo3 LONGBLOB NULL,
-   description VARCHAR(255) NOT NULL 
+   photo1 VARCHAR(255) NULL,
+   photo2 VARCHAR(255) NULL,
+   photo3 VARCHAR(255) NULL,
+   description VARCHAR(500) NOT NULL, 
+   uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS course_files (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    sub_name VARCHAR(255),
-    file_name VARCHAR(255),
-    file_desc VARCHAR(255),
-    file_path VARCHAR(500)
+    sub_name VARCHAR(255) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_desc TEXT,
+    file_path VARCHAR(500) NOT NULL,
+    file_type VARCHAR(50) DEFAULT 'pdf',
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
