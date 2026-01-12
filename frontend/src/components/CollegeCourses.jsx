@@ -1,44 +1,68 @@
-import React, { useState } from "react";
-import { useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import axios from "axios";
 import { AppContent } from "../context/AppContext";
+import { toast } from "react-toastify";
 
 const CollegeCourses = () => {
-  const { backendUrl } = useContext(AppContent)
+  const { backendUrl } = useContext(AppContent);
+
+  const [courses, setCourses] = useState([]);
+  const [pdf, setPdf] = useState(null);
+
   const [form, setForm] = useState({
     sub_name: "",
     file_name: "",
     file_desc: "",
   });
 
-  const [pdf, setPdf] = useState(null);
+  /*  FETCH COURSES  */
+  const fetchCourses = async () => {
+    try {
+      const { data } = await axios.get(
+        `${backendUrl}/api/roles/get-courses-years`,
+        { withCredentials: true }
+      );
 
+      if (data.success) {
+        setCourses(data.courses || []);
+      }
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, [backendUrl]);
+
+  /*  INPUT HANDLERS  */
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handlePdf = (e) => {
     const file = e.target.files[0];
-
     if (!file) return;
 
     if (file.type !== "application/pdf") {
-      alert("Only PDF files are allowed");
+      toast.error("Only PDF files are allowed")
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      alert("PDF must be less than 10MB");
+      toast.error("PDF must be under 10MB")
       return;
     }
 
     setPdf(file);
   };
 
+  /*  SUBMIT  */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.sub_name || !form.file_name || !pdf) {
-      alert("Subject, File Name & PDF are required");
+      toast.error("Subject, File Name and PDF are required")
       return;
     }
 
@@ -46,24 +70,25 @@ const CollegeCourses = () => {
     data.append("sub_name", form.sub_name);
     data.append("file_name", form.file_name);
     data.append("file_desc", form.file_desc);
-    data.append("file", pdf);
-    data.append("file_type", "pdf");
+    data.append("file", pdf); // multer field name
 
     try {
-      const res = await axios.post(`${backendUrl}/api/courses`,data);
-
-      const result = await res.json();
+      const { data: result } = await axios.post(
+        `${backendUrl}/api/college/add-course-files`,
+        data,
+        { withCredentials: true }
+      );
 
       if (result.success) {
-        alert("PDF uploaded successfully");
+        toast.success("PDF uploaded successfully")
         setForm({ sub_name: "", file_name: "", file_desc: "" });
         setPdf(null);
       } else {
-        alert(result.message || "Upload failed");
+        toast.error(result.message || "Upload failed")
       }
     } catch (err) {
       console.error(err);
-      alert("Server error");
+      toast.error("Server error")
     }
   };
 
@@ -72,20 +97,27 @@ const CollegeCourses = () => {
       <h2 className="text-2xl font-bold mb-4">Upload Course PDF</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Subject Name */}
+
+        {/* SUBJECT */}
         <div>
-          <label className="block font-medium mb-1">Subject Name</label>
-          <input
-            type="text"
+          <label className="block font-medium mb-1">Subject</label>
+          <select
             name="sub_name"
             value={form.sub_name}
             onChange={handleChange}
             className="w-full border rounded px-3 py-2"
             required
-          />
+          >
+            <option value="">Select subject</option>
+            {courses.map((course) => (
+              <option key={course} value={course}>
+                {course}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {/* File Name */}
+        {/* FILE NAME */}
         <div>
           <label className="block font-medium mb-1">File Name</label>
           <input
@@ -98,7 +130,7 @@ const CollegeCourses = () => {
           />
         </div>
 
-        {/* Description */}
+        {/* DESCRIPTION */}
         <div>
           <label className="block font-medium mb-1">File Description</label>
           <textarea
@@ -110,14 +142,14 @@ const CollegeCourses = () => {
           />
         </div>
 
-        {/* PDF Upload */}
+        {/* PDF */}
         <div>
           <label className="block font-medium mb-1">Upload PDF</label>
           <input
             type="file"
             accept="application/pdf"
             onChange={handlePdf}
-            className="w-full"
+            className="w-full cursor-pointer"
             required
           />
           {pdf && (
@@ -127,10 +159,10 @@ const CollegeCourses = () => {
           )}
         </div>
 
-        {/* Submit */}
+        {/* SUBMIT */}
         <button
           type="submit"
-          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 cursor-pointer"
         >
           Upload PDF
         </button>
