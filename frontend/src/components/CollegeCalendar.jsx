@@ -4,17 +4,16 @@ import { AppContent } from "../context/AppContext";
 
 // 🇮🇳 Month-wise Indian Government Holidays
 const indianHolidays = {
-  0: { 1: "New Year", 26: "Republic Day" }, // Jan
-  7: { 15: "Independence Day" },
-  11: { 2: "Gandhi Jayanti", 25: "Christmas" },
+  0: { 1: "New Year", 13: "Lohri", 14: "Makar Sankranti", 26: "Republic Day" },
+  1: { 27: "Maha Shivaratri" },
+  2: { 2: "Holi" },
   3: { 2: "Good Friday", 4: "Easter Sunday" },
   5: { 6: "Bakrid" },
   6: { 15: "Independence Day", 27: "Ganesh Chaturthi" },
-  8: { 5: "Milad-un-Nabi", 1: "Saraswathi Pooja" },
-  9: { 20: "Diwali", 1: "Puducherry Liberation Day" },
-  0: { 13: "Lohri", 14: "Makar Sankranti", 26: "Republic Day" },
-  1: { 27: "Maha Shivaratri" },
-  2: { 2: "Holi" },
+  7: { 15: "Independence Day" },
+  8: { 1: "Saraswathi Pooja", 5: "Milad-un-Nabi" },
+  9: { 1: "Puducherry Liberation Day", 20: "Diwali" },
+  11: { 2: "Gandhi Jayanti", 25: "Christmas" },
 };
 
 const CollegeCalendar = () => {
@@ -27,10 +26,9 @@ const CollegeCalendar = () => {
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
-
   const [newEvent, setNewEvent] = useState("");
 
-  //  Fetch events
+  // Fetch events
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -40,7 +38,7 @@ const CollegeCalendar = () => {
     setEvents(res.data.AllEvents || []);
   };
 
-  //  Add event
+  // Add event
   const addEvent = async () => {
     if (!newEvent || !selectedDate) return;
 
@@ -48,12 +46,13 @@ const CollegeCalendar = () => {
       date: selectedDate,
       events: newEvent,
     });
+
     setShowPopup(false);
     setNewEvent("");
     fetchEvents();
   };
 
-  //  Calendar calculations
+  // Calendar calculations
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstDay = new Date(currentYear, currentMonth, 1).getDay();
 
@@ -63,12 +62,13 @@ const CollegeCalendar = () => {
 
   const currentMonthHolidays = indianHolidays[currentMonth] || {};
 
+  // Monthly events (RIGHT PANEL)
   const monthlyEvents = events.filter((e) => {
     const d = new Date(e.date);
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
   });
 
-  //  Month switch
+  // Month navigation
   const changeMonth = (dir) => {
     if (dir === "prev") {
       if (currentMonth === 0) {
@@ -83,16 +83,15 @@ const CollegeCalendar = () => {
     }
   };
 
-  // Click day
   const openDay = (day) => {
-    const d = new Date(currentYear, currentMonth, day);
-    setSelectedDate(d);
+    setSelectedDate(new Date(currentYear, currentMonth, day));
     setShowPopup(true);
   };
 
   const selectedDayEvents = selectedDate
     ? events.filter(
-        (e) => new Date(e.date).toDateString() === selectedDate.toDateString()
+        (e) =>
+          new Date(e.date).toDateString() === selectedDate.toDateString()
       )
     : [];
 
@@ -124,7 +123,7 @@ const CollegeCalendar = () => {
           </button>
         </div>
 
-        {/* DAYS */}
+        {/* WEEK DAYS */}
         <div className="grid grid-cols-7 text-center font-semibold mb-2">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
             <div key={d}>{d}</div>
@@ -139,19 +138,27 @@ const CollegeCalendar = () => {
             const dateObj = new Date(currentYear, currentMonth, day);
             const isSunday = dateObj.getDay() === 0;
             const isHoliday = currentMonthHolidays[day];
+
+            const hasEvent = events.some(
+              (e) =>
+                new Date(e.date).toDateString() === dateObj.toDateString()
+            );
+
             const isToday =
               day === today.getDate() &&
               currentMonth === today.getMonth() &&
               currentYear === today.getFullYear();
 
+            let bgClass = "bg-white";
+            if (isSunday || isHoliday) bgClass = "bg-red-500 text-white";
+            else if (hasEvent) bgClass = "bg-green-500 text-white";
+
             return (
               <div
                 key={i}
                 onClick={() => openDay(day)}
-                className={`cursor-pointer h-20 border rounded flex flex-col items-center justify-center
-                ${isSunday || isHoliday ? "bg-red-500 text-white" : "bg-white"}
-                ${isToday ? "ring-4 ring-blue-400" : ""}
-                `}
+                className={`cursor-pointer h-20 border rounded flex flex-col items-center justify-center ${bgClass}
+                ${isToday ? "ring-4 ring-blue-400" : ""}`}
               >
                 <div className="font-bold">{day}</div>
                 {isHoliday && (
@@ -172,15 +179,18 @@ const CollegeCalendar = () => {
             <p className="text-sm text-gray-500">No events</p>
           )}
           {monthlyEvents.map((e, i) => (
-            <p key={i} className="text-sm">
+            <p key={i} className="text-sm text-green-600">
               {new Date(e.date).getDate()} : {e.events}
             </p>
           ))}
         </div>
 
-        {/* HOLIDAYS */}
+        {/* GOVERNMENT HOLIDAYS */}
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-bold mb-2">Government Holidays</h3>
+          {Object.keys(currentMonthHolidays).length === 0 && (
+            <p className="text-sm text-gray-500">No holidays</p>
+          )}
           {Object.entries(currentMonthHolidays).map(([d, n]) => (
             <p key={d} className="text-sm text-red-600">
               {d} : {n}
@@ -193,16 +203,16 @@ const CollegeCalendar = () => {
       {showPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="bg-white w-96 p-4 rounded shadow-lg">
-            <h3 className="font-bold mb-2">{selectedDate.toDateString()}</h3>
+            <h3 className="font-bold mb-2">
+              {selectedDate.toDateString()}
+            </h3>
 
             {selectedDayEvents.length === 0 && (
               <p className="text-sm text-gray-500">No events</p>
             )}
 
             {selectedDayEvents.map((e, i) => (
-              <p key={i} className="text-sm">
-                • {e.events}
-              </p>
+              <p key={i} className="text-sm">• {e.events}</p>
             ))}
 
             <input
@@ -216,13 +226,13 @@ const CollegeCalendar = () => {
             <div className="flex justify-end gap-2 mt-3">
               <button
                 onClick={() => setShowPopup(false)}
-                className="px-3 py-1 bg-gray-300 rounded cursor-pointer"
+                className="px-3 py-1 bg-gray-300 rounded"
               >
                 Close
               </button>
               <button
                 onClick={addEvent}
-                className="px-3 py-1 bg-blue-600 text-white rounded cursor-pointer"
+                className="px-3 py-1 bg-blue-600 text-white rounded"
               >
                 Add
               </button>
