@@ -209,7 +209,7 @@ const ContentDatas = () => {
         <p className="text-slate-500 mb-6 text-center">Step {step} of 5</p>
         <form
           onSubmit={handleSubmit}
-          className="bg-white shadow-2xl rounded-xl p-6 sm:p-10 w-full max-w-3xl mb-10"
+          className="bg-white shadow-2xl rounded-xl p-6 sm:p-10 w-full max-w-3xl mb-10 cursor-pointer"
         >
           {/* STEP 1 - Batch Details */}
           {step === 1 && (
@@ -397,12 +397,6 @@ const ContentDatas = () => {
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Upload Photo
                 </label>
-                {/*   <input
-                  type="file"
-                  name="photo"
-                  accept="image/*"
-                  onChange={handleChange}
-                /> */}
                 <input
                   type="file"
                   name="photo"
@@ -549,7 +543,7 @@ const ContentDatas = () => {
               <button
                 type="button"
                 onClick={handleBack}
-                className="px-6 py-2 bg-gray-300 text-slate-800 rounded-lg font-semibold hover:bg-gray-400"
+                className="px-6 py-2 bg-gray-300 text-slate-800 rounded-lg font-semibold hover:bg-gray-400 cursor-pointer"
               >
                 Back
               </button>
@@ -558,7 +552,7 @@ const ContentDatas = () => {
               <button
                 type="button"
                 onClick={handleNext}
-                className="ml-auto px-6 py-2 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800"
+                className="ml-auto px-6 py-2 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800 cursor-pointer"
               >
                 Next
               </button>
