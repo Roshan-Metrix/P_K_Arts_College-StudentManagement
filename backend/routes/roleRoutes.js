@@ -1,5 +1,4 @@
 import express from 'express';
-import multer from 'multer';
 import userAuth from '../middleware/userAuth.js';
 import adminAuth from '../middleware/adminAuth.js';
 import {
@@ -14,17 +13,15 @@ import {
   viewAllStudentsData,
   viewStudentData,
 } from '../controllers/rolesController.js';
-
-// multer setup for storing image in memory (as buffer)
-const upload = multer({ storage: multer.memoryStorage() });
+import uploadStudentImage from '../middleware/uploadStudentImage.js';
 
 const roleRouter = express.Router();
 
-roleRouter.post('/students', userAuth, upload.single('photo'), AddStudentDetail);
+roleRouter.post('/students', userAuth, uploadStudentImage.single('photo'), AddStudentDetail);
 roleRouter.post('/students/moreData/:student_uid', userAuth, storeExtraStudentData);
 roleRouter.get('/getStudentsData', userAuth, viewAllStudentsData);
 roleRouter.get('/viewStudentData/:student_uid', userAuth, viewStudentData);
-roleRouter.put('/updateStudentData/:student_uid', userAuth, upload.single('photo'), updateStudentDetail);
+roleRouter.put('/updateStudentData/:student_uid', userAuth, uploadStudentImage.single('photo'), updateStudentDetail);
 roleRouter.put('/updateExtraStudentData/:student_uid', userAuth, updateExtraStudentData);
 roleRouter.delete('/deleteStudent/:student_uid', userAuth, deleteStudent);
 roleRouter.get('/user/data', userAuth, getLoggedInUserData);
