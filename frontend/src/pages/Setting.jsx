@@ -18,6 +18,7 @@ import {
 import CollegeCalendar from "../components/CollegeCalendar";
 import CollegeEvents from "../components/CollegeEvents";
 import CollegeCourses from "../components/CollegeCourses";
+import CollegeNotice from "../components/CollegeNotice";
 
 const Setting = () => {
   const { backendUrl, setIsLoggedin } = useContext(AppContent);
@@ -371,6 +372,16 @@ const Setting = () => {
                     }`}
                   >
                     💃🏻 Events
+                  </button>
+                  <button
+                    onClick={() => setSubPortalTab("notices")}
+                    className={`text-left py-1 px-3 rounded-md text-sm ${
+                      subPortalTab === "notices"
+                        ? "bg-indigo-100 text-indigo-700 font-medium"
+                        : "hover:bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    📰 Notices
                   </button>
                   <button
                     onClick={() => setSubPortalTab("courses")}
@@ -763,17 +774,22 @@ const Setting = () => {
           {/* Manage Portal Sections */}
           {activeTab === "portal" && dropdownPortalOpen && (
             <>
-              {/* Add User */}
+              {/* Calendar */}
               {subPortalTab === "calendar" && (
                <CollegeCalendar />
               )}
 
-              {/* Reset Password */}
+              {/* Events */}
               {subPortalTab === "events" && (
                 <CollegeEvents />
               )}
 
-              {/* All Users */}
+              {/* Notices */}
+              {subPortalTab === "notices" && (
+               <CollegeNotice />
+              )}
+
+              {/* Courses */}
               {subPortalTab === "courses" && (
                <CollegeCourses />
               )}
