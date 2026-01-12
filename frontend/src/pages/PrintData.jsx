@@ -76,7 +76,7 @@ const PrintData = () => {
   useEffect(() => {
     let filtered = students;
 
-    // 🔍 Multi-search
+    //  Multi-search
     if (searchQuery) {
       const searchTerms = searchQuery
         .split(",")
@@ -135,7 +135,7 @@ const PrintData = () => {
     doc.save("Filtered_Students.pdf");
   };
 
-  // 📊 Download Excel
+  //  Download Excel
   const downloadExcel = () => {
     const rows = filteredStudents.map((s) => ({
       UID: s.student_uid,
@@ -152,7 +152,7 @@ const PrintData = () => {
     XLSX.writeFile(wb, "Filtered_Students.xlsx");
   };
 
-  // 📄 Download Word
+  // Download Word
   const downloadWord = async () => {
     const tableRows = [
       new TableRow({
@@ -217,7 +217,6 @@ const PrintData = () => {
     saveAs(blob, "Filtered_Students.docx");
   };
 
-  // 🧠 UI
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300">
       <NavInsideBar />

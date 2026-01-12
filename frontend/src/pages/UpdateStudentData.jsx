@@ -67,7 +67,7 @@ const UpdateStudentData = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // --- Update main student info ---
+      //  Update main student info 
       const updatedForm = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
         if (key !== "photo" && value !== undefined && value !== null)
@@ -84,7 +84,7 @@ const UpdateStudentData = () => {
         }
       );
 
-      // --- Update extra data ---
+      //  Update extra data 
       const extraRes = await axios.put(
         `${backendUrl}/api/roles/updateExtraStudentData/${student_uid}`,
         extraData,
@@ -261,7 +261,7 @@ const UpdateStudentData = () => {
             <div className="mt-6">
               <p className="text-sm text-slate-600 mb-2">Current Photo:</p>
               <img
-                src={`data:image/*;base64,${formData.photo}`}
+                src={formData.photo}
                 alt="student"
                 className="w-32 h-32 object-cover rounded-lg border"
               />

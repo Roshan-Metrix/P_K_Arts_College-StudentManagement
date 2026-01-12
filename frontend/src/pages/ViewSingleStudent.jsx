@@ -15,7 +15,7 @@ const ViewSingleStudent = () => {
   const { backendUrl } = useContext(AppContent);
   const [data, setData] = useState(null);
 
-  // -------- Fetch Student Full Data --------
+  //  Fetch Student Full Data 
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -47,7 +47,7 @@ const ViewSingleStudent = () => {
   const attendance = data.student_attendance?.[0] || {};
   const semesters = data.student_semesters?.[0] || {};
 
-  // -------- Helper data builders --------
+  //  Helper data builders 
   const personalDetails = [
     ["Student UID", student.student_uid],
     ["Name", student.name],
@@ -102,7 +102,7 @@ const ViewSingleStudent = () => {
     ["Sem 8", attendance.attendanceSem8 || "—"],
   ];
 
-  // -------- Exports --------
+  //  Exports 
   const downloadPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(14);
@@ -246,7 +246,6 @@ const ViewSingleStudent = () => {
     saveAs(blob, `${student.name}_Full_Profile.docx`);
   };
 
-  // -------- UI --------
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-300">
       <NavInsideBar />
@@ -283,16 +282,16 @@ const ViewSingleStudent = () => {
 
         {/* Student Card */}
         <div className="bg-white shadow-2xl rounded-xl p-6 sm:p-10 w-full max-w-5xl mb-10">
-          {/* {student.photo && (
+          {student.photo && (
             <div className="flex justify-center mb-6">
               <img
-                src={`${backendUrl}/api/upload/${student.photo}`}
+                src={student.photo}
                 alt="Student"
                 className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-slate-200"
               />
             </div>
-          )} */}
-          {student.photo && (
+          )}
+          {/* {student.photo && (
             <div className="flex justify-center mb-6">
               <img
                 src={`data:image/jpeg;base64,${student.photo}`}
@@ -300,7 +299,7 @@ const ViewSingleStudent = () => {
                 className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-slate-200"
               />
             </div>
-          )}
+          )} */}
 
           {/* Personal */}
           <Section title="Personal Details" data={personalDetails} />
@@ -327,7 +326,7 @@ const ViewSingleStudent = () => {
   );
 };
 
-// -------- Reusable Components --------
+//  Reusable Components 
 const Section = ({ title, data }) => (
   <div className="mb-8">
     <h3 className="text-lg font-bold text-slate-800 mb-3">{title}</h3>

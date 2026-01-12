@@ -14,7 +14,7 @@ dotenv.config();
 const app = express();
 createDB();
 const port = process.env.PORT || 4000;
-const allowedOrigins = ['http://127.0.0.1:3000',process.env.FRONTEND_URI];
+const allowedOrigins = ["*",process.env.FRONTEND_URI];
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,7 +30,7 @@ app.get('/',(req,res) => {
     res.send('API Working . . .');
 })
 
-// app.use('/api/upload',express.static(path.join(__dirname, "uploads")));
+app.use('/uploads',express.static(path.join(__dirname, "uploads")));
 
 app.use('/api/auth',authRouter)
 app.use('/api/roles',roleRouter)
