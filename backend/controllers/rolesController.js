@@ -1,5 +1,7 @@
 import createDB from "../config/connection.js";
 import generateStudentId from "../lib/generateStdID.js";
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const AddStudentDetail = async (req, res) => {
   try {
@@ -30,17 +32,22 @@ export const AddStudentDetail = async (req, res) => {
       scholarshipDetails,
     } = req.body;
 
-    const photo = req.file ? req.file.buffer : null;
+    let photoPath = null;
 
-    const db = (await createDB.getConnection)
+    if (req.file) {
+      photoPath = `/uploads/students/${req.file.filename}`;
+    }
+
+    const db = (createDB.getConnection)
       ? await createDB.getConnection()
       : await createDB();
 
-    // Check for existing email
+    //  Check duplicate email
     const [existingStudent] = await db.execute(
-      "SELECT * FROM studentdata WHERE email = ?",
+      "SELECT id FROM studentdata WHERE email = ?",
       [email ?? null]
     );
+
     if (existingStudent.length > 0) {
       return res.status(400).json({
         success: false,
@@ -48,41 +55,73 @@ export const AddStudentDetail = async (req, res) => {
       });
     }
 
-   if (photo && Buffer.byteLength(photo, 'base64') > 500 * 1024) {
-  return res.status(400).json({ success: false, message: "Photo must be less than 500KB" });
-}
-
+    // INSERT QUERY
     const insertQuery = `
       INSERT INTO studentdata (
         name, dob, fatherName, fatherOccupation, motherName, motherOccupation,
         mediumOfInstruction, marksScored, percentage, schoolNamePlace, religion,
         nationality, category, dateOfAdmission, dateOfLeaving, contactNo, email,
         aadhaar, address, gender, course, year, photo, bloodGroup, scholarshipDetails
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const params = [
-      name ?? null, dob ?? null, fatherName ?? null, fatherOccupation ?? null, motherName ?? null, motherOccupation ?? null,
-      mediumOfInstruction ?? null, marksScored ?? null, percentage ?? null, schoolNamePlace ?? null, religion ?? null,
-      nationality ?? null, category ?? null, dateOfAdmission ?? null, dateOfLeaving ?? null, contactNo ?? null,
-      email ?? null, aadhaar ?? null, address ?? null, gender ?? null, course ?? null, year ?? null, photo ?? null, bloodGroup ?? null, scholarshipDetails ?? null,
+      name ?? null,
+      dob ?? null,
+      fatherName ?? null,
+      fatherOccupation ?? null,
+      motherName ?? null,
+      motherOccupation ?? null,
+      mediumOfInstruction ?? null,
+      marksScored ?? null,
+      percentage ?? null,
+      schoolNamePlace ?? null,
+      religion ?? null,
+      nationality ?? null,
+      category ?? null,
+      dateOfAdmission ?? null,
+      dateOfLeaving ?? null,
+      contactNo ?? null,
+      email ?? null,
+      aadhaar ?? null,
+      address ?? null,
+      gender ?? null,
+      course ?? null,
+      year ?? null,
+      photoPath ?? null,
+      bloodGroup ?? null,
+      scholarshipDetails ?? null,
     ];
 
     await db.execute(insertQuery, params);
- 
 
-    const [studentId] = await db.execute("SELECT id FROM studentdata WHERE email = ?", [email]);
-    await generateStudentId(studentId[0].id);
-    const [student_uid] = await db.execute("SELECT student_uid FROM studentdata WHERE email = ?", [email]);
+    // Generate student UID
+    const [studentRow] = await db.execute(
+      "SELECT id FROM studentdata WHERE email = ?",
+      [email]
+    );
 
-    res.json({
+    await generateStudentId(studentRow[0].id);
+
+    const [studentUid] = await db.execute(
+      "SELECT student_uid FROM studentdata WHERE email = ?",
+      [email]
+    );
+
+    res.status(201).json({
       success: true,
       message: "Student data inserted successfully.",
-      student_uid: student_uid[0].student_uid,
+      student_uid: studentUid[0].student_uid,
+      photo: photoPath,
     });
+
   } catch (error) {
-    console.error("Error in studentDetail controller:", error);
-    res.json({ success: false, message: error.message });
+    console.error("Error in AddStudentDetail:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -111,7 +150,7 @@ export const storeExtraStudentData = async (req, res) => {
       "INSERT INTO student_fees (student_uid, feesYear1, feesYear2, feesYear3, feesYear4) VALUES (?, ?, ?, ?, ?)",
       [
         student_uid,
-        data.feesYear1 ?? '',
+        data.feesYear1 ?? null,
         data.feesYear2 ?? null,
         data.feesYear3 ?? null,
         data.feesYear4 ?? null,
@@ -212,24 +251,30 @@ export const viewStudentData = async (req, res) => {
       [student_uid]
     );
 
-    if (!studentRows?.length)
-      return res.status(404).json({ success: false, message: "Student not found" });
+    if (!studentRows.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
 
     const student = studentRows[0];
 
-    // ✅ Convert binary image to Base64
+    /* Convert photo path to full URL */
     if (student.photo) {
-      student.photo = Buffer.from(student.photo).toString("base64");
+      student.photo = `${process.env.BACKEND_URL || "http://localhost:3000"}${student.photo}`;
     }
 
     const [student_fees] = await db.execute(
       "SELECT * FROM student_fees WHERE student_uid = ?",
       [student_uid]
     );
+
     const [student_attendance] = await db.execute(
       "SELECT * FROM student_attendance WHERE student_uid = ?",
       [student_uid]
     );
+
     const [student_semesters] = await db.execute(
       "SELECT * FROM student_semesters WHERE student_uid = ?",
       [student_uid]
@@ -242,15 +287,20 @@ export const viewStudentData = async (req, res) => {
       student_attendance,
       student_semesters,
     });
+
   } catch (error) {
     console.error("Error in viewStudentData controller:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
 
 export const updateStudentDetail = async (req, res) => {
   try {
     const { student_uid } = req.params;
+
     const {
       name,
       dob,
@@ -278,23 +328,40 @@ export const updateStudentDetail = async (req, res) => {
       scholarshipDetails,
     } = req.body;
 
-    const photo = req.file ? req.file.buffer : null; // Use null instead of empty string
+    let photoPath = null;
 
-    // Check photo size if uploaded
-    if (photo && photo.length > 500 * 1024) { // 500KB
-      return res.status(400).json({ success: false, message: "Photo must be less than 500KB" });
+    const updatedDOB = dob ? new Date(dob).toISOString().split('T')[0] : null;
+    const updatedDateOfAdmission = dateOfAdmission ? new Date(dob).toISOString().split('T')[0] : null;
+    const updatedDateOfLeaving = dateOfLeaving ? new Date(dob).toISOString().split('T')[0] : null;
+
+    //  IMAGE SIZE CHECK (2MB)
+    if(req.file) {
+      if(req.file.size > 2 * 1024 * 1024) {
+        return res.status(400).json({
+          success: false,
+          message: "Photo must be less than 2MB",
+        });
+      }
+
+      photoPath = `/uploads/students/${req.file.filename}`;
     }
 
     const db = await createDB();
 
+    //  CHECK STUDENT EXISTS
     const [studentRows] = await db.execute(
-      "SELECT * FROM studentdata WHERE student_uid = ?",
+      "SELECT photo FROM studentdata WHERE student_uid = ?",
       [student_uid]
     );
+
     if (!studentRows.length) {
-      return res.status(404).json({ success: false, message: "Student not found." });
+      return res.status(404).json({
+        success: false,
+        message: "Student not found.",
+      });
     }
 
+    //  UPDATE QUERY
     const updateQuery = `
       UPDATE studentdata SET
         name=?, dob=?, fatherName=?, fatherOccupation=?, motherName=?, motherOccupation=?,
@@ -305,22 +372,49 @@ export const updateStudentDetail = async (req, res) => {
       WHERE student_uid=?
     `;
 
-    // Replace undefined with null for SQL
     const params = [
-      name ?? null, dob ?? null, fatherName ?? null, fatherOccupation ?? null, motherName ?? null, motherOccupation ?? null,
-      mediumOfInstruction ?? null, marksScored ?? null, percentage ?? null, schoolNamePlace ?? null, religion ?? null,
-      nationality ?? null, category ?? null, dateOfAdmission ?? null, dateOfLeaving ?? null, contactNo ?? null, email ?? null,
-      aadhaar ?? null, address ?? null, gender ?? null, course ?? null, year ?? null, bloodGroup ?? null, scholarshipDetails ?? null,
-      photo, student_uid
+      name ?? null,
+      updatedDOB ?? null,
+      fatherName ?? null,
+      fatherOccupation ?? null,
+      motherName ?? null,
+      motherOccupation ?? null,
+      mediumOfInstruction ?? null,
+      marksScored ?? null,
+      percentage ?? null,
+      schoolNamePlace ?? null,
+      religion ?? null,
+      nationality ?? null,
+      category ?? null,
+      updatedDateOfAdmission ?? null,
+      updatedDateOfLeaving ?? null,
+      contactNo ?? null,
+      email ?? null,
+      aadhaar ?? null,
+      address ?? null,
+      gender ?? null,
+      course ?? null,
+      year ?? null,
+      bloodGroup ?? null,
+      scholarshipDetails ?? null,
+      photoPath,
+      student_uid,
     ];
 
     await db.execute(updateQuery, params);
 
-    res.json({ success: true, message: "Student updated successfully!" });
+    res.json({
+      success: true,
+      message: "Student updated successfully!",
+      photo: photoPath || studentRows[0].photo,
+    });
 
   } catch (error) {
     console.error("Error in updateStudentDetail controller:", error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
