@@ -5,16 +5,16 @@ import { AppContent } from "../context/AppContext";
 // 🇮🇳 Month-wise Indian Government Holidays
 const indianHolidays = {
   0: { 1: "New Year", 26: "Republic Day" }, // Jan
-  7: { 15: "Independence Day" },            // Aug
+  7: { 15: "Independence Day" },
   11: { 2: "Gandhi Jayanti", 25: "Christmas" },
   3: { 2: "Good Friday", 4: "Easter Sunday" },
-  5: { 6: "Bakrid" },                             
-  6: { 15: "Independence Day", 27: "Ganesh Chaturthi" }, // Jul
-  8: { 5: "Milad-un-Nabi", 1: "Saraswathi Pooja" }, // Sep
-  9: { 20: "Diwali", 1: "Puducherry Liberation Day" }, // Oct
-  0: { 13: "Lohri", 14: "Makar Sankranti", 26: "Republic Day" }, // Jan
-  1: { 27: "Maha Shivaratri" },                    // Feb
-  2: { 2: "Holi" }                                 // Mar
+  5: { 6: "Bakrid" },
+  6: { 15: "Independence Day", 27: "Ganesh Chaturthi" },
+  8: { 5: "Milad-un-Nabi", 1: "Saraswathi Pooja" },
+  9: { 20: "Diwali", 1: "Puducherry Liberation Day" },
+  0: { 13: "Lohri", 14: "Makar Sankranti", 26: "Republic Day" },
+  1: { 27: "Maha Shivaratri" },
+  2: { 2: "Holi" },
 };
 
 const CollegeCalendar = () => {
@@ -37,7 +37,6 @@ const CollegeCalendar = () => {
 
   const fetchEvents = async () => {
     const res = await axios.get(`${backendUrl}/api/college/get-events`);
-    console.log(res.data.AllEvents);
     setEvents(res.data.AllEvents || []);
   };
 
@@ -49,7 +48,7 @@ const CollegeCalendar = () => {
       date: selectedDate,
       events: newEvent,
     });
-
+    setShowPopup(false);
     setNewEvent("");
     fetchEvents();
   };
@@ -64,31 +63,28 @@ const CollegeCalendar = () => {
 
   const currentMonthHolidays = indianHolidays[currentMonth] || {};
 
-  const monthlyEvents = events.filter(e => {
+  const monthlyEvents = events.filter((e) => {
     const d = new Date(e.date);
-    return (
-      d.getMonth() === currentMonth &&
-      d.getFullYear() === currentYear
-    );
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
   });
 
   //  Month switch
-  const changeMonth = dir => {
+  const changeMonth = (dir) => {
     if (dir === "prev") {
       if (currentMonth === 0) {
         setCurrentMonth(11);
-        setCurrentYear(y => y - 1);
-      } else setCurrentMonth(m => m - 1);
+        setCurrentYear((y) => y - 1);
+      } else setCurrentMonth((m) => m - 1);
     } else {
       if (currentMonth === 11) {
         setCurrentMonth(0);
-        setCurrentYear(y => y + 1);
-      } else setCurrentMonth(m => m + 1);
+        setCurrentYear((y) => y + 1);
+      } else setCurrentMonth((m) => m + 1);
     }
   };
 
   // Click day
-  const openDay = day => {
+  const openDay = (day) => {
     const d = new Date(currentYear, currentMonth, day);
     setSelectedDate(d);
     setShowPopup(true);
@@ -96,9 +92,7 @@ const CollegeCalendar = () => {
 
   const selectedDayEvents = selectedDate
     ? events.filter(
-        e =>
-          new Date(e.date).toDateString() ===
-          selectedDate.toDateString()
+        (e) => new Date(e.date).toDateString() === selectedDate.toDateString()
       )
     : [];
 
@@ -108,18 +102,31 @@ const CollegeCalendar = () => {
       <div className="w-3/4 bg-gray-100 p-4 rounded-lg">
         {/* HEADER */}
         <div className="flex justify-between items-center mb-4">
-          <button onClick={() => changeMonth("prev")} className="px-3 py-1 bg-gray-300 rounded">◀</button>
+          <button
+            onClick={() => changeMonth("prev")}
+            className="px-3 py-1 bg-gray-300 rounded"
+          >
+            ◀
+          </button>
 
           <h2 className="text-xl font-bold">
-            {new Date(currentYear, currentMonth).toLocaleString("default", { month: "long" })} {currentYear}
+            {new Date(currentYear, currentMonth).toLocaleString("default", {
+              month: "long",
+            })}{" "}
+            {currentYear}
           </h2>
 
-          <button onClick={() => changeMonth("next")} className="px-3 py-1 bg-gray-300 rounded">▶</button>
+          <button
+            onClick={() => changeMonth("next")}
+            className="px-3 py-1 bg-gray-300 rounded"
+          >
+            ▶
+          </button>
         </div>
 
         {/* DAYS */}
         <div className="grid grid-cols-7 text-center font-semibold mb-2">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
             <div key={d}>{d}</div>
           ))}
         </div>
@@ -147,7 +154,9 @@ const CollegeCalendar = () => {
                 `}
               >
                 <div className="font-bold">{day}</div>
-                {isHoliday && <div className="text-xs text-center">{isHoliday}</div>}
+                {isHoliday && (
+                  <div className="text-xs text-center">{isHoliday}</div>
+                )}
               </div>
             );
           })}
@@ -159,7 +168,9 @@ const CollegeCalendar = () => {
         {/* MONTHLY EVENTS */}
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-bold mb-2">Monthly Events</h3>
-          {monthlyEvents.length === 0 && <p className="text-sm text-gray-500">No events</p>}
+          {monthlyEvents.length === 0 && (
+            <p className="text-sm text-gray-500">No events</p>
+          )}
           {monthlyEvents.map((e, i) => (
             <p key={i} className="text-sm">
               {new Date(e.date).getDate()} : {e.events}
@@ -182,31 +193,37 @@ const CollegeCalendar = () => {
       {showPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="bg-white w-96 p-4 rounded shadow-lg">
-            <h3 className="font-bold mb-2">
-              {selectedDate.toDateString()}
-            </h3>
+            <h3 className="font-bold mb-2">{selectedDate.toDateString()}</h3>
 
             {selectedDayEvents.length === 0 && (
               <p className="text-sm text-gray-500">No events</p>
             )}
 
             {selectedDayEvents.map((e, i) => (
-              <p key={i} className="text-sm">• {e.events}</p>
+              <p key={i} className="text-sm">
+                • {e.events}
+              </p>
             ))}
 
             <input
               type="text"
               placeholder="Add event"
               value={newEvent}
-              onChange={e => setNewEvent(e.target.value)}
+              onChange={(e) => setNewEvent(e.target.value)}
               className="border p-2 rounded w-full mt-3"
             />
 
             <div className="flex justify-end gap-2 mt-3">
-              <button onClick={() => setShowPopup(false)} className="px-3 py-1 bg-gray-300 rounded">
+              <button
+                onClick={() => setShowPopup(false)}
+                className="px-3 py-1 bg-gray-300 rounded cursor-pointer"
+              >
                 Close
               </button>
-              <button onClick={addEvent} className="px-3 py-1 bg-blue-600 text-white rounded">
+              <button
+                onClick={addEvent}
+                className="px-3 py-1 bg-blue-600 text-white rounded cursor-pointer"
+              >
                 Add
               </button>
             </div>
