@@ -60,7 +60,7 @@ const NavBar = () => {
               <ul className="list-none m-0 p-2 text-sm text-slate-700">
                 <li
                   onClick={() => {
-                    navigate("/profile");
+                    navigate("/setting");
                     setShowDropdown(false);
                   }}
                   className="py-2 px-3 hover:bg-slate-100 rounded-md cursor-pointer font-medium"

@@ -21,7 +21,7 @@ const Header = () => {
       {/* Greeting */}
       <h1 className="flex items-center justify-center gap-2 text-lg sm:text-3xl font-medium mb-2">
         Hey {userData ? userData.name : "User"}!
-        <img className="w-6 sm:w-8 aspect-square" src={assets.hand_wave} alt="wave" />
+        {/* <img className="w-6 sm:w-8 aspect-square" src={assets.hand_wave} alt="wave" /> */}
       </h1>
 
       {/* Title */}
