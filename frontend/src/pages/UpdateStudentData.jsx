@@ -91,6 +91,8 @@ const UpdateStudentData = () => {
         { withCredentials: true }
       );
 
+      console.log(extraRes.data);
+
       if (mainRes.data.success || extraRes.data.success) {
         toast.success("Details updated successfully!");
         navigate("/view");
