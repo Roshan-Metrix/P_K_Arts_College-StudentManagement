@@ -19,12 +19,12 @@ export const registerUser = async (req, res) => {
             return res.json({ success: false, message: "User already exists" });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        // const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insert new user
         await db.execute(
             'INSERT INTO users (name, email, dept, password) VALUES (?, ?, ?, ?)',
-            [name, email, dept, hashedPassword]
+            [name, email, dept, password]
         );
 
         return res.json({ success: true,message: 'User registered successfully' });
@@ -55,7 +55,12 @@ export const loginUser = async (req,res) => {
         const user = userRows[0];
 
         // Compare password
-        const isMatch = await bcrypt.compare(password, user.password);
+        // const isMatch = await bcrypt.compare(password, user.password);
+        // if (!isMatch) {
+        //     return res.json({ success: false, message: 'Invalid Password' });
+        // }
+
+        const isMatch = password === user.password;
         if (!isMatch) {
             return res.json({ success: false, message: 'Invalid Password' });
         }
@@ -110,17 +115,22 @@ export const resetPassword = async (req, res) => {
         const user = userRows[0];
 
         // Compare password
-        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        // const isMatch = await bcrypt.compare(oldPassword, user.password);
+        // if (!isMatch) {
+        //     return res.json({ success: false, message: 'Invalid Password' });
+        // }
+
+        const isMatch = oldPassword === user.password;
         if (!isMatch) {
             return res.json({ success: false, message: 'Invalid Password' });
         }
 
-        const hashPassword = await bcrypt.hash(newPassword, 10);
+        // const hashPassword = await bcrypt.hash(newPassword, 10);
 
         // Update password and clear OTP fields
         await db.execute(
             'UPDATE users SET password = ? WHERE email = ?',
-            [hashPassword, email]
+            [newPassword, email]
         );
 
         return res.json({ success: true, message: 'Password has been reset successfully' });

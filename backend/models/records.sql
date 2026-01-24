@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
-  phoneNo VARCHAR(15) NOT NULL,
   password VARCHAR(100) NOT NULL,
   dept VARCHAR(255),
   role ENUM('staffs', 'admin') DEFAULT 'staffs',
