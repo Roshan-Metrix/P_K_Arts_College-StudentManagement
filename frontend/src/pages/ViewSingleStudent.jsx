@@ -15,13 +15,13 @@ const ViewSingleStudent = () => {
   const { backendUrl } = useContext(AppContent);
   const [data, setData] = useState(null);
 
-  //  Fetch Student Full Data 
+  //  Fetch Student Full Data
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(
           `${backendUrl}/api/roles/viewStudentData/${student_uid}`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
         if (data.success) {
           setData(data);
@@ -47,7 +47,7 @@ const ViewSingleStudent = () => {
   const attendance = data.student_attendance?.[0] || {};
   const semesters = data.student_semesters?.[0] || {};
 
-  //  Helper data builders 
+  //  Helper data builders
   const personalDetails = [
     ["Student UID", student.student_uid],
     ["Name", student.name],
@@ -85,10 +85,10 @@ const ViewSingleStudent = () => {
   }));
 
   const feesTable = [
-    ["Year 1", fees.feesYear1 || "—"],
-    ["Year 2", fees.feesYear2 || "—"],
-    ["Year 3", fees.feesYear3 || "—"],
-    ["Year 4", fees.feesYear4 || "—"],
+    ["I", fees.feesYear1 || "—"],
+    ["II", fees.feesYear2 || "—"],
+    ["III", fees.feesYear3 || "—"],
+    ["IV", fees.feesYear4 || "—"],
   ];
 
   const attendanceTable = [
@@ -102,57 +102,195 @@ const ViewSingleStudent = () => {
     ["Sem 8", attendance.attendanceSem8 || "—"],
   ];
 
-  //  Exports 
-  const downloadPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(14);
-    doc.text("PERUNTHALAIVAR KAMARAJAR ARTS COLLEGE", 105, 20, {
-      align: "center",
-    });
-    doc.setFontSize(12);
-    doc.text("Department of Commerce", 105, 28, { align: "center" });
-    doc.setFontSize(13);
-    doc.text("STUDENT FULL PROFILE", 105, 38, { align: "center" });
+  //  Exports
+ const downloadPDF = async () => {
+  const doc = new jsPDF("p", "mm", "a4");
 
-    autoTable(doc, {
-      startY: 45,
-      head: [["Field", "Information"]],
-      body: personalDetails,
-      theme: "grid",
+  /*  IMAGE HELPER  */
+  const loadImageAsBase64 = async (url) => {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
     });
-
-    doc.text("Fees Details", 14, doc.lastAutoTable.finalY + 10);
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 15,
-      head: [["Year", "Fees Amount"]],
-      body: feesTable,
-      theme: "grid",
-    });
-
-    doc.text("Attendance Details", 14, doc.lastAutoTable.finalY + 10);
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 15,
-      head: [["Semester", "Attendance %"]],
-      body: attendanceTable,
-      theme: "grid",
-    });
-
-    doc.text("Semester Details", 14, doc.lastAutoTable.finalY + 10);
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 15,
-      head: [["Semester", "Exam Fees", "GPA", "CGPA", "Marksheet"]],
-      body: semesterRows.map((s) => [
-        s.sem,
-        s.examFees,
-        s.gpa,
-        s.cgpa,
-        s.marksheet,
-      ]),
-      theme: "grid",
-    });
-
-    doc.save(`${student.name}_Full_Profile.pdf`);
   };
+
+  /*  HEADER  */
+
+  doc.setFont("times", "bold");
+  doc.setFontSize(14);
+  doc.text("PERUNTHALAIVAR KAMARAJAR ARTS COLLEGE", 105, 15, { align: "center" });
+
+  doc.setFontSize(11);
+  doc.text("Department of Commerce", 105, 22, { align: "center" });
+
+  doc.setFontSize(12);
+  doc.text("STUDENTS PROFILE", 105, 32, { align: "center" });
+
+  doc.line(15, 35, 195, 35);
+
+  /*  PHOTO  */
+
+  if (student.photo) {
+    try {
+      const img = await loadImageAsBase64(student.photo);
+      doc.addImage(img, "JPEG", 160, 40, 30, 35);
+      doc.rect(160, 40, 30, 35);
+    } catch {}
+  }
+
+  /*  STUDENT DETAILS  */
+
+  const studentDetails = [
+    ["Name (as per Qualifying Records)", student.name],
+    ["Date of Birth", student.dob?.split("T")[0]],
+    ["Father's Name", student.fatherName],
+    ["Mother's Name", student.motherName],
+    ["Medium of Instruction", student.mediumOfInstruction],
+    ["School Name & Place", student.schoolNamePlace],
+    ["Religion", student.religion],
+    ["Nationality", student.nationality],
+    ["Category", student.category],
+    ["Date of Admission", student.dateOfAdmission?.split("T")[0]],
+    ["Contact No", student.contactNo],
+    ["E-mail ID", student.email],
+    ["Aadhaar No", student.aadhaar],
+    ["Blood Group", student.bloodGroup],
+    ["Scholarship Details", student.scholarshipDetails],
+    ["Address for Communication", student.address],
+  ];
+
+  autoTable(doc, {
+    startY: 40,
+    margin: { right: 50 },
+    theme: "plain",
+    styles: { fontSize: 9, cellPadding: 1 },
+    columnStyles: {
+      0: { cellWidth: 60, fontStyle: "bold" },
+      1: { cellWidth: 70 },
+    },
+    body: studentDetails.map(([l, v]) => [
+      l,
+      `: ${v ?? ""}`,
+    ]),
+  });
+
+  let y = doc.lastAutoTable.finalY + 6;
+
+  /*  FEES DETAILS  */
+
+  doc.setFont("times", "bold");
+  doc.text("Fee's Details", 15, y);
+  y += 3;
+
+  autoTable(doc, {
+    startY: y,
+    theme: "grid",
+    styles: { fontSize: 9 },
+    head: [
+      [{ content: "Academic Year Fees", colSpan: 4, styles: { halign: "center" } }],
+      ["I", "II", "III", "IV"],
+    ],
+    body: [[
+      fees.feesYear1 ?? "",
+      fees.feesYear2 ?? "",
+      fees.feesYear3 ?? "",
+      fees.feesYear4 ?? "",
+    ]],
+  });
+
+  y = doc.lastAutoTable.finalY + 6;
+
+  /*  ATTENDANCE  */
+
+  doc.setFont("times", "bold");
+  doc.text("Percentage of Attendance (in each Semester)", 15, y);
+  y += 3;
+
+  autoTable(doc, {
+    startY: y,
+    theme: "grid",
+    styles: { fontSize: 9 },
+    head: [["I", "II", "III", "IV", "V", "VI", "VII", "VIII"]],
+    body: [[
+      attendance.attendanceSem1,
+      attendance.attendanceSem2,
+      attendance.attendanceSem3,
+      attendance.attendanceSem4,
+      attendance.attendanceSem5,
+      attendance.attendanceSem6,
+      attendance.attendanceSem7,
+      attendance.attendanceSem8,
+    ].map(v => v ?? "")],
+  });
+
+  y = doc.lastAutoTable.finalY + 6;
+
+  /*  SEMESTER TABLE  */
+
+  autoTable(doc, {
+    startY: y,
+    theme: "grid",
+    styles: { fontSize: 9 },
+    head: [
+      [
+        { content: "Description", rowSpan: 2 },
+        { content: "SEMESTER", colSpan: 8, styles: { halign: "center" } },
+      ],
+      ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"],
+    ],
+    body: [
+      [
+        "Exam Fees",
+        semesters.examfeesSem1,
+        semesters.examfeesSem2,
+        semesters.examfeesSem3,
+        semesters.examfeesSem4,
+        semesters.examfeesSem5,
+        semesters.examfeesSem6,
+        semesters.examfeesSem7,
+        semesters.examfeesSem8,
+      ],
+      [
+        "Grade Point (GPA)",
+        semesters.gpaSem1,
+        semesters.gpaSem2,
+        semesters.gpaSem3,
+        semesters.gpaSem4,
+        semesters.gpaSem5,
+        semesters.gpaSem6,
+        semesters.gpaSem7,
+        semesters.gpaSem8,
+      ],
+      [
+        "CGPA",
+        semesters.cgpaSem1,
+        semesters.cgpaSem2,
+        semesters.cgpaSem3,
+        semesters.cgpaSem4,
+        semesters.cgpaSem5,
+        semesters.cgpaSem6,
+        semesters.cgpaSem7,
+        semesters.cgpaSem8,
+      ],
+      [
+        "Mark Sheet",
+        semesters.marksheetSem1,
+        semesters.marksheetSem2,
+        semesters.marksheetSem3,
+        semesters.marksheetSem4,
+        semesters.marksheetSem5,
+        semesters.marksheetSem6,
+        semesters.marksheetSem7,
+        semesters.marksheetSem8,
+      ],
+    ].map(row => row.map(v => v ?? "")),
+  });
+
+  doc.save(`${student.name}_Student_Profile.pdf`);
+};
 
   const downloadExcel = () => {
     const wb = XLSX.utils.book_new();
@@ -205,7 +343,7 @@ const ViewSingleStudent = () => {
       paragraphs.push(
         new Paragraph({
           children: [new TextRun({ text: `\n${title}`, bold: true, size: 24 })],
-        })
+        }),
       );
       arr.forEach(([k, v]) =>
         paragraphs.push(
@@ -214,8 +352,8 @@ const ViewSingleStudent = () => {
               new TextRun({ text: `${k}: `, bold: true }),
               new TextRun(v ? String(v) : "—"),
             ],
-          })
-        )
+          }),
+        ),
       );
     };
 
@@ -226,7 +364,7 @@ const ViewSingleStudent = () => {
     paragraphs.push(
       new Paragraph({
         children: [new TextRun({ text: "\nSemester Details", bold: true })],
-      })
+      }),
     );
     semesterRows.forEach((s) =>
       paragraphs.push(
@@ -234,11 +372,11 @@ const ViewSingleStudent = () => {
           children: [
             new TextRun({ text: `${s.sem}: `, bold: true }),
             new TextRun(
-              `Exam Fees: ${s.examFees}, GPA: ${s.gpa}, CGPA: ${s.cgpa}, Marksheet: ${s.marksheet}`
+              `Exam Fees: ${s.examFees}, GPA: ${s.gpa}, CGPA: ${s.cgpa}, Marksheet: ${s.marksheet}`,
             ),
           ],
-        })
-      )
+        }),
+      ),
     );
 
     const doc = new Document({ sections: [{ children: paragraphs }] });
@@ -291,32 +429,15 @@ const ViewSingleStudent = () => {
               />
             </div>
           )}
-          {/* {student.photo && (
-            <div className="flex justify-center mb-6">
-              <img
-                src={`data:image/jpeg;base64,${student.photo}`}
-                alt="Student"
-                className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-slate-200"
-              />
-            </div>
-          )} */}
 
           {/* Personal */}
           <Section title="Personal Details" data={personalDetails} />
 
           {/* Fees Table */}
-          <TableSection
-            title="Fees Details"
-            headers={["Year", "Fees Amount"]}
-            rows={feesTable}
-          />
+          <FeesTableSection title="Fees Details" fees={fees} />
 
           {/* Attendance Table */}
-          <TableSection
-            title="Attendance Details"
-            headers={["Semester", "Attendance %"]}
-            rows={attendanceTable}
-          />
+          <AttendanceSection title="Attendance Details" data={attendance} />
 
           {/* Semester Table */}
           <SemesterSection title="Semester Details" data={semesterRows} />
@@ -326,7 +447,7 @@ const ViewSingleStudent = () => {
   );
 };
 
-//  Reusable Components 
+//  Reusable Components
 const Section = ({ title, data }) => (
   <div className="mb-8">
     <h3 className="text-lg font-bold text-slate-800 mb-3">{title}</h3>
@@ -343,64 +464,134 @@ const Section = ({ title, data }) => (
   </div>
 );
 
-const TableSection = ({ title, headers, rows }) => (
+// implement this table with fetched data
+const AttendanceSection = ({ title, data }) => {
+  const values = [
+    data.attendanceSem1,
+    data.attendanceSem2,
+    data.attendanceSem3,
+    data.attendanceSem4,
+    data.attendanceSem5,
+    data.attendanceSem6,
+    data.attendanceSem7,
+    data.attendanceSem8,
+  ].map((v) => v ?? "—");
+
+  return (
+    <div className="mb-8">
+      <h3 className="text-lg font-bold text-slate-800 mb-3">{title}</h3>
+
+      <div className="overflow-x-auto">
+        <table className="w-full border border-slate-300 text-sm text-slate-700">
+          <thead className="bg-slate-200">
+            <tr>
+              {["I", "II", "III", "IV", "V", "VI", "VII", "VIII"].map((h) => (
+                <th key={h} className="border px-4 py-2 text-center">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              {values.map((v, i) => (
+                <td key={i} className="border px-4 py-2 text-center">
+                  {v}%
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const FeesTableSection = ({ title, fees }) => (
   <div className="mb-8">
     <h3 className="text-lg font-bold text-slate-800 mb-3">{title}</h3>
+
     <div className="overflow-x-auto">
-      <table className="min-w-full border border-slate-300 text-sm text-slate-700">
+      <table className="w-full border border-slate-300 text-sm text-slate-700">
         <thead className="bg-slate-200">
           <tr>
-            {headers.map((head, idx) => (
-              <th key={idx} className="px-4 py-2 border">
-                {head}
+            {["I", "II", "III", "IV"].map((h) => (
+              <th key={h} className="border px-4 py-2 text-center">
+                {h}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {rows.map((r, i) => (
-            <tr key={i}>
-              {r.map((cell, j) => (
-                <td key={j} className="border px-4 py-2 text-center">
-                  {cell}
-                </td>
-              ))}
-            </tr>
-          ))}
+          <tr>
+            <td className="border px-4 py-2 text-center">
+              {fees.feesYear1 ?? "—"}
+            </td>
+            <td className="border px-4 py-2 text-center">
+              {fees.feesYear2 ?? "—"}
+            </td>
+            <td className="border px-4 py-2 text-center">
+              {fees.feesYear3 ?? "—"}
+            </td>
+            <td className="border px-4 py-2 text-center">
+              {fees.feesYear4 ?? "—"}
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
 );
 
-const SemesterSection = ({ title, data }) => (
-  <div>
-    <h3 className="text-lg font-bold text-slate-800 mb-3">{title}</h3>
-    <div className="overflow-x-auto">
-      <table className="min-w-full border border-slate-300 text-sm text-slate-700">
-        <thead className="bg-slate-200">
-          <tr>
-            <th className="px-4 py-2 border">Semester</th>
-            <th className="px-4 py-2 border">Exam Fees</th>
-            <th className="px-4 py-2 border">GPA</th>
-            <th className="px-4 py-2 border">CGPA</th>
-            <th className="px-4 py-2 border">Marksheet</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((s, i) => (
-            <tr key={i}>
-              <td className="border px-4 py-2 text-center">{s.sem}</td>
-              <td className="border px-4 py-2 text-center">{s.examFees}</td>
-              <td className="border px-4 py-2 text-center">{s.gpa}</td>
-              <td className="border px-4 py-2 text-center">{s.cgpa}</td>
-              <td className="border px-4 py-2 text-center">{s.marksheet}</td>
+const SemesterSection = ({ title, data }) => {
+  const row = key => data.map(d => d[key] ?? "—");
+
+  return (
+    <div className="mb-8">
+      <h3 className="text-lg font-bold text-slate-800 mb-3">{title}</h3>
+
+      <div className="overflow-x-auto">
+        <table className="w-full border border-slate-300 text-sm text-slate-700">
+          <thead className="bg-slate-200">
+            <tr>
+              <th rowSpan={2} className="border px-4 py-2 text-center">
+                Description
+              </th>
+              <th colSpan={8} className="border px-4 py-2 text-center">
+                SEMESTER
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+            <tr>
+              {["I","II","III","IV","V","VI","VII","VIII"].map(h => (
+                <th key={h} className="border px-4 py-2 text-center">{h}</th>
+              ))}
+            </tr>
+          </thead>
+
+          <tbody>
+            {[
+              ["Exam Fees", "examFees"],
+              ["Grade Point (GPA)", "gpa"],
+              ["CGPA", "cgpa"],
+              ["Mark Sheet", "marksheet"],
+            ].map(([label, key]) => (
+              <tr key={key}>
+                <td className="border px-4 py-2 font-semibold text-center">
+                  {label}
+                </td>
+                {row(key).map((v, i) => (
+                  <td key={i} className="border px-4 py-2 text-center">
+                    {v}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
-);
+  );
+};
+
 
 export default ViewSingleStudent;
