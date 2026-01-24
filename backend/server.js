@@ -14,11 +14,11 @@ dotenv.config();
 const app = express();
 createDB();
 const port = process.env.PORT || 4000;
-const allowedOrigins = ["*",process.env.FRONTEND_URI];
+// const allowedOrigins = ["http://127.0.0.1:3001",process.env.FRONTEND_URI];
+const allowedOrigins = process.env.FRONTEND_URI;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 
 app.use(express.json());
 app.use(cookieParser());
