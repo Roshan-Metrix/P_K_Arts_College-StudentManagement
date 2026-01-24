@@ -422,9 +422,10 @@ export const updateExtraStudentData = async (req, res) => {
   try {
     const { student_uid } = req.params;
     const data = req.body;
-    const db = (await createDB.getConnection)
-      ? await createDB.getConnection()
-      : await createDB();
+
+    const db = createDB.getConnection
+  ? await createDB.getConnection()
+  : await createDB();
 
     // Check if student exists
     const [existingFees] = await db.execute(
